@@ -1,8 +1,176 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#050708"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="apple-touch-icon.png"><title>XCAR Управление</title><style>*{box-sizing:border-box}body{margin:0;font-family:system-ui;background:#050708;color:#f4f7f8}button,input,textarea{font:inherit}.wrap{max-width:1200px;margin:auto;padding:20px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.brand{font-size:28px;font-weight:900}.muted{color:#94a0a5}.panel{background:#0d1214;border:1px solid #1d292d;border-radius:20px;padding:18px;margin-bottom:16px;box-shadow:0 14px 40px #0008}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{padding:15px;border-radius:15px;background:#111a1d}.stat b{font-size:25px;display:block}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.input{width:100%;background:#090d0f;border:1px solid #29373b;color:#fff;padding:12px;border-radius:12px}.btn{border:0;border-radius:12px;padding:11px 14px;background:#e7f6f5;color:#071011;font-weight:800;cursor:pointer}.btn.green{background:#28d391}.btn.red{background:#ff5d69;color:white}.btn.dark{background:#182327;color:#fff}.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:14px}.tab{white-space:nowrap}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:11px 8px;border-bottom:1px solid #202c30;text-align:left}.badge{padding:5px 8px;border-radius:999px;background:#182327;font-size:12px}.ok{color:#2fe29a}.danger{color:#ff6570}@media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr)}.table{font-size:13px}.hideMob{display:none}}
-</style></head><body><div class="wrap"><div class="top"><div><div class="brand">XCAR <span class="muted">SUPER ADMIN</span></div><div class="muted">Пользователи · подписки · заявки · сообщения · резервные копии</div></div><button class="btn dark" onclick="location.reload()">Обновить</button></div><div id="login" class="panel"><h2>Вход администратора</h2><input id="u" class="input" placeholder="Логин"><br><br><input id="p" class="input" type="password" placeholder="Пароль"><br><br><button class="btn" onclick="login()">Войти</button><div id="lh" class="muted"></div></div><div id="app" style="display:none"><div class="grid"><div class="stat"><span class="muted">Пользователи</span><b id="sUsers">0</b></div><div class="stat"><span class="muted">Заявки</span><b id="sReq">0</b></div><div class="stat"><span class="muted">Заблокировано</span><b id="sBlock">0</b></div><div class="stat"><span class="muted">Бесплатный старт</span><b>30 дней</b></div></div><div class="tabs"><button class="btn tab" onclick="show('users')">Пользователи</button><button class="btn dark tab" onclick="show('req')">Заявки</button><button class="btn dark tab" onclick="show('msg')">Сообщение</button><button class="btn dark tab" onclick="backup()">Резервная копия</button></div><div id="users" class="panel"><h2>Пользователи</h2><div id="usersBox"></div></div><div id="req" class="panel" style="display:none"><h2>Заявки на подписку</h2><div id="reqBox"></div></div><div id="msg" class="panel" style="display:none"><h2>Сообщение пользователю</h2><input id="mid" class="input" placeholder="ID пользователя"><br><br><textarea id="mtext" class="input" rows="4" placeholder="Текст сообщения"></textarea><br><br><button class="btn" onclick="sendMsg()">Отправить</button><div id="mh" class="muted"></div></div></div></div><script>
-let auth='';async function api(path,opt={}){opt.headers={...(opt.headers||{}),Authorization:auth};return fetch('/api'+path,opt)}function login(){auth='Basic '+btoa((u.value||'')+':'+(p.value||''));api('/admin/users').then(r=>{if(!r.ok)throw 0;login.style});}
-async function doLogin(){ }
-window.login=async()=>{auth='Basic '+btoa((document.getElementById('u').value||'')+':'+(document.getElementById('p').value||''));const r=await api('/admin/users');if(!r.ok){document.getElementById('lh').textContent='Неверные данные';return}document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';load();};
-async function load(){const [u,r]=await Promise.all([api('/admin/users'),api('/admin/requests')]);const ud=await u.json(),rd=await r.json();document.getElementById('sUsers').textContent=ud.users.length;document.getElementById('sReq').textContent=rd.requests.filter(x=>x.status==='pending').length;document.getElementById('sBlock').textContent=ud.users.filter(x=>x.blocked).length;document.getElementById('usersBox').innerHTML='<table class="table"><tr><th>ID</th><th>Логин</th><th>Подписка</th><th>Статус</th><th>Действия</th></tr>'+ud.users.map(x=>`<tr><td>${x.id}</td><td>${x.username}</td><td>${x.subscription_until?new Date(x.subscription_until).toLocaleDateString('ru-RU'):'—'}</td><td>${x.blocked?'<span class="danger">Заблокирован</span>':'<span class="ok">Активен</span>'}</td><td><button class="btn dark" onclick="days(${x.id})">+ дни</button> <button class="btn ${x.blocked?'':'red'}" onclick="block(${x.id},${!x.blocked})">${x.blocked?'Разблок.':'Блок'}</button> <button class="btn red" onclick="del(${x.id})">Удалить</button></td></tr>`).join('')+'</table>';document.getElementById('reqBox').innerHTML=rd.requests.map(x=>`<div class="panel"><b>#${x.id} · ${x.username}</b><div>${x.name} · ${x.phone}</div><div>${x.months} мес. · ${x.price} ₽ · <span class="badge">${x.status}</span></div>${x.status==='pending'?`<br><button class="btn green" onclick="decide(${x.id},'approved')">Принять</button> <button class="btn red" onclick="decide(${x.id},'rejected')">Отклонить</button>`:''}</div>`).join('')||'<span class="muted">Заявок нет</span>';}
-async function days(id){const d=prompt('Сколько дней добавить?',30);if(d)await api('/admin/users/'+id+'/subscription',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:Number(d)})});load()}async function block(id,b){await api('/admin/users/'+id+'/block',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({blocked:b})});load()}async function del(id){if(confirm('Удалить пользователя?')){await api('/admin/users/'+id,{method:'DELETE'});load()}}async function decide(id,status){await api('/admin/requests/'+id+'/decision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});load()}async function sendMsg(){const r=await api('/admin/message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:Number(document.getElementById('mid').value),message:document.getElementById('mtext').value})});document.getElementById('mh').textContent=r.ok?'Отправлено ✓':'Ошибка'}function show(id){['users','req','msg'].forEach(x=>document.getElementById(x).style.display=x===id?'block':'none')}function backup(){location.href='/api/admin/backup'}
-</script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("service-worker.js").catch(()=>{}));}</script></body></html>
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1013">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>XCAR Super Admin</title>
+<style>
+:root{--bg:#f3f6f8;--card:#fff;--text:#172126;--muted:#718087;--line:#dfe7ea;--accent:#19c77a;--danger:#ff5d69;--blue:#3d7cff;--shadow:0 12px 32px rgba(15,35,55,.08)}
+html[data-theme=dark]{--bg:#090e14;--card:#111923;--text:#f3f7fb;--muted:#94a2b2;--line:#273445;--shadow:0 15px 38px rgba(0,0,0,.25)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif;transition:.2s}
+button,input,textarea,select{font:inherit}button{cursor:pointer}.wrap{max-width:1380px;margin:auto;padding:14px 16px calc(28px + env(safe-area-inset-bottom))}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(16px);padding:10px 0 14px}.brand{font-size:25px;font-weight:950;letter-spacing:-.6px}.brand small{display:block;font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.3px}.actions{display:flex;gap:7px;flex-wrap:wrap}.btn{border:1px solid var(--line);border-radius:13px;padding:11px 14px;background:var(--card);color:var(--text);font-weight:800}.btn.primary{background:var(--accent);border-color:var(--accent);color:#04140d}.btn.blue{background:var(--blue);border-color:var(--blue);color:#fff}.btn.red{background:var(--danger);border-color:var(--danger);color:#fff}.btn.dark{background:#172126;color:#fff;border-color:#172126}.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:13px;box-shadow:var(--shadow)}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{padding:15px;border-radius:16px;background:color-mix(in srgb,var(--card) 82%,var(--bg));border:1px solid var(--line)}.stat b{font-size:26px;display:block}.muted{color:var(--muted)}.tabs{display:flex;gap:7px;overflow:auto;padding-bottom:3px}.tab{white-space:nowrap;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:13px;padding:11px 13px;font-weight:850}.tab.active{background:var(--text);color:var(--card)}.section{display:none}.section.active{display:block}.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.input,.select,.textarea{width:100%;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:12px;padding:12px;outline:none}.textarea{min-height:110px;resize:vertical}.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.four{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.field label{display:block;font-size:12px;font-weight:850;margin:0 0 6px;color:var(--muted)}.tableWrap{overflow:auto;border:1px solid var(--line);border-radius:16px}.table{width:100%;border-collapse:collapse;min-width:760px}.table th,.table td{text-align:left;padding:11px;border-bottom:1px solid var(--line);vertical-align:middle}.table th{font-size:12px;color:var(--muted);background:color-mix(in srgb,var(--card) 85%,var(--bg))}.table tr:last-child td{border-bottom:0}.pill{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:850;background:#e9f8f0;color:#0b8f54}.pill.red{background:#ffe8eb;color:#d62e3d}.pill.blue{background:#e9f0ff;color:#315fce}.userGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.userCard{border:1px solid var(--line);border-radius:17px;padding:13px;background:var(--card)}.userCard h3{margin:0 0 5px;font-size:16px}.userCard p{margin:4px 0;color:var(--muted);font-size:12px}.modal{position:fixed;inset:0;background:rgba(0,0,0,.52);display:none;align-items:center;justify-content:center;padding:16px;z-index:100}.modal.open{display:flex}.modalCard{width:min(680px,96vw);max-height:90vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 25px 80px rgba(0,0,0,.28)}.modalHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}.close{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:22px}.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#172126;color:#fff;padding:12px 16px;border-radius:14px;display:none;z-index:300;font-weight:800}.toast.show{display:block}.guest{border:1px dashed var(--line);padding:13px;border-radius:16px;margin-bottom:12px}.search{max-width:340px}.backupList{display:grid;gap:8px}.backupItem{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);border-radius:14px;padding:11px}.chat{display:grid;grid-template-columns:250px 1fr;gap:10px;height:620px}.chatUsers{overflow:auto;border:1px solid var(--line);border-radius:16px;padding:7px}.chatUser{width:100%;text-align:left;border:0;background:transparent;color:var(--text);padding:12px;border-radius:12px}.chatUser.active{background:color-mix(in srgb,var(--blue) 14%,var(--card))}.messages{border:1px solid var(--line);border-radius:16px;padding:12px;overflow:auto;display:flex;flex-direction:column;gap:8px}.msg{max-width:75%;padding:9px 11px;border-radius:14px;background:color-mix(in srgb,var(--bg) 75%,var(--card));align-self:flex-start}.msg.admin{align-self:flex-end;background:#dff8ec}.msg small{display:block;opacity:.55;margin-top:3px;font-size:9px}.broadcastPreview{border:1px solid #9adab9;border-radius:16px;padding:13px;background:linear-gradient(135deg,#effff6,#fff)}html[data-theme=dark] .broadcastPreview{background:#102219;border-color:#275b3f} 
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.userGrid{grid-template-columns:repeat(2,1fr)}.four{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.wrap{padding:10px 10px 25px}.top{align-items:flex-start}.brand{font-size:22px}.grid,.userGrid,.two,.three,.four{grid-template-columns:1fr}.chat{grid-template-columns:1fr;height:70vh}.chatUsers{max-height:160px}.msg{max-width:88%}.panel{padding:13px;border-radius:17px}.btn{min-height:46px}.input,.select,.textarea{min-height:46px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+ <div class="brand">XCAR <span>Super Admin</span><small>Управление • подписки • сервер • резервные копии</small></div>
+ <div class="actions"><button class="btn" id="themeBtn">☀️</button><button class="btn blue" id="authBtn">🔐 Администратор</button></div>
+</header>
+
+<div class="guest" id="guestNotice"><b>👁 Просмотр без входа</b><div class="muted">Панель открывается сразу. Изменяющие действия защищены авторизацией.</div></div>
+
+<div class="panel">
+ <div class="tabs">
+  <button class="tab active" data-tab="dashboard">Главная</button>
+  <button class="tab" data-tab="users">Пользователи</button>
+  <button class="tab" data-tab="requests">Заявки</button>
+  <button class="tab" data-tab="broadcast">📣 Рассылка</button>
+  <button class="tab" data-tab="chat">💬 Чаты</button>
+  <button class="tab" data-tab="subscription">👑 Подписка</button>
+  <button class="tab" data-tab="payment">💳 Реквизиты</button>
+  <button class="tab" data-tab="server">🌐 Сервер</button>
+  <button class="tab" data-tab="backups">💾 Резервные копии</button>
+ </div>
+</div>
+
+<section class="section active" id="dashboard">
+ <div class="grid">
+  <div class="stat"><span class="muted">Пользователи</span><b id="sUsers">—</b></div>
+  <div class="stat"><span class="muted">Активные подписки</span><b id="sActive">—</b></div>
+  <div class="stat"><span class="muted">Истекшие</span><b id="sExpired">—</b></div>
+  <div class="stat"><span class="muted">Заявки</span><b id="sRequests">—</b></div>
+ </div>
+ <div class="panel" style="margin-top:13px"><h2 style="margin:0 0 7px">XCAR Super Admin</h2><p class="muted">Управление выполняется через единый сервер. Пользовательское приложение получает реквизиты, тарифы, сообщения и адрес сервера автоматически.</p><div class="row"><button class="btn primary" onclick="openTab('users')">Открыть пользователей</button><button class="btn" onclick="openTab('payment')">Мои реквизиты</button><button class="btn" onclick="openTab('server')">Настройки сервера</button></div></div>
+</section>
+
+<section class="section" id="users">
+ <div class="panel">
+  <div class="row" style="justify-content:space-between"><div><h2 style="margin:0">👥 Все пользователи</h2><span class="muted">Данные доступны после авторизации</span></div><div class="row"><input class="input search" id="userSearch" placeholder="Поиск пользователя"></div></div>
+ </div>
+ <div class="userGrid" id="userGrid"><div class="panel">🔒 Войдите для просмотра данных пользователей.</div></div>
+</section>
+
+<section class="section" id="requests">
+ <div class="panel"><div class="row" style="justify-content:space-between"><div><h2 style="margin:0">💰 Заявки на оплату</h2><span class="muted">Принять или отклонить — срок добавится автоматически</span></div><button class="btn" onclick="loadAll()">Обновить</button></div></div>
+ <div class="tableWrap"><table class="table"><thead><tr><th>ID</th><th>Пользователь</th><th>Тариф</th><th>Сумма</th><th>Дата</th><th>Статус</th><th></th></tr></thead><tbody id="reqBody"><tr><td colspan="7">🔒 Авторизация нужна для заявок.</td></tr></tbody></table></div>
+</section>
+
+<section class="section" id="broadcast">
+ <div class="two">
+  <div class="panel"><h2 style="margin-top:0">📣 Сообщение на главный экран</h2>
+   <div class="field"><label>Заголовок</label><input class="input" id="bcTitle" value="Сообщение от XCAR"></div>
+   <div class="field" style="margin-top:10px"><label>Текст сообщения</label><textarea class="textarea" id="bcMessage" placeholder="Напишите сообщение пользователям"></textarea></div>
+   <div class="field" style="margin-top:10px"><label>Кому отправить</label><select class="select" id="bcTarget"><option value="all">Всем пользователям</option><option value="active">Только с активной подпиской</option><option value="expired">Только с истёкшей подпиской</option><option value="blocked">Только заблокированным</option><option value="selected">Выбранным пользователям</option></select></div>
+   <div class="field" style="margin-top:10px"><label>Показывать до (необязательно)</label><input class="input" id="bcExpire" type="datetime-local"></div>
+   <div id="selectedUsersBox" style="display:none;margin-top:10px"><label class="muted">Выберите пользователей</label><div id="selectedUsers" class="userGrid" style="margin-top:7px"></div></div>
+   <button class="btn primary" style="margin-top:12px;width:100%" onclick="sendBroadcast()">Отправить на главный экран</button>
+  </div>
+  <div class="panel"><h2 style="margin-top:0">Предпросмотр</h2><div class="broadcastPreview"><b id="prevTitle">Сообщение от XCAR</b><p id="prevMessage" class="muted">Здесь появится текст сообщения.</p><small>✨ Красивое окно с анимацией в XCAR Пользователь</small></div><div id="broadcastHistory" style="margin-top:12px"></div></div>
+ </div>
+</section>
+
+<section class="section" id="chat">
+ <div class="panel"><h2 style="margin-top:0">💬 Чаты с пользователями</h2><div class="chat"><div class="chatUsers" id="chatUsers"></div><div style="display:flex;flex-direction:column;gap:8px"><div class="panel" style="margin:0;padding:10px"><b id="chatHead">Выберите пользователя</b></div><div class="messages" id="msgs"></div><div class="row"><input class="input" id="chatText" placeholder="Сообщение"><button class="btn primary" onclick="sendChat()">➤</button></div></div></div></div>
+</section>
+
+<section class="section" id="subscription">
+ <div class="panel"><h2 style="margin-top:0">👑 Тарифы и бесплатный период</h2>
+  <div class="four">
+   <div class="field"><label>Бесплатно при регистрации, дней</label><input class="input" id="trialDays" type="number" min="0"></div>
+   <div class="field"><label>1 месяц, ₽</label><input class="input" id="monthPrice" type="number" min="0"></div>
+   <div class="field"><label>Скидка 3 месяца, %</label><input class="input" id="disc3" type="number" min="0" max="100"></div>
+   <div class="field"><label>Скидка 6 месяцев, %</label><input class="input" id="disc6" type="number" min="0" max="100"></div>
+  </div>
+  <div class="two" style="margin-top:10px"><div class="field"><label>Скидка 12 месяцев, %</label><input class="input" id="disc12" type="number" min="0" max="100"></div><div class="row" style="align-items:end"><button class="btn primary" onclick="saveSubscription()">Сохранить тарифы</button><button class="btn red" onclick="applyTrialAll()">Применить бесплатный период всем</button></div></div>
+  <p class="muted">Изменение бесплатного периода для всех заменит текущий срок подписки каждого пользователя на выбранное количество дней. Используй кнопку только намеренно.</p>
+ </div>
+</section>
+
+<section class="section" id="payment">
+ <div class="panel"><h2 style="margin-top:0">💳 Мои реквизиты</h2>
+  <div class="two"><div class="field"><label>Банк</label><input class="input" id="payBank"></div><div class="field"><label>Номер карты / телефона для оплаты</label><input class="input" id="payCard"></div></div>
+  <div class="two" style="margin-top:10px"><div class="field"><label>ФИО получателя</label><input class="input" id="payRecipient"></div><div class="field"><label>Телефон</label><input class="input" id="payPhone"></div></div>
+  <div class="field" style="margin-top:10px"><label>Текст для QR-кода</label><textarea class="textarea" id="payQr" placeholder="Если оставить пустым, QR будет создан из основных реквизитов"></textarea></div>
+  <div class="field" style="margin-top:10px"><label>Инструкция пользователю</label><textarea class="textarea" id="payInstruction"></textarea></div>
+  <button class="btn primary" style="margin-top:10px" onclick="savePayment()">Сохранить реквизиты</button>
+ </div>
+</section>
+
+<section class="section" id="server">
+ <div class="panel"><h2 style="margin-top:0">🌐 Сервер и связь</h2>
+  <div class="two"><div class="field"><label>Сервер по умолчанию</label><input class="input" id="serverUrl"></div><div class="field"><label>Состояние</label><div class="row"><button class="btn" onclick="ping()">📡 Проверить пинг</button><b id="pingResult" class="muted">Не проверено</b></div></div></div>
+  <div class="row" style="margin-top:12px"><button class="btn primary" onclick="saveServer()">Сохранить сервер</button><button class="btn" onclick="document.getElementById('serverUrl').value='https://zero1-server-calculator-xcar.onrender.com'">Вернуть Render</button></div>
+ </div>
+</section>
+
+<section class="section" id="backups">
+ <div class="panel"><div class="row" style="justify-content:space-between"><div><h2 style="margin:0">💾 Резервные копии</h2><span class="muted">Автоматически каждый день + ручная копия</span></div><button class="btn primary" onclick="makeBackup()">Создать копию сейчас</button></div></div>
+ <div class="backupList" id="backupList"><div class="panel">🔒 Войдите для просмотра резервных копий.</div></div>
+</section>
+</div>
+
+<div class="modal" id="loginModal"><div class="modalCard"><div class="modalHead"><h2 style="margin:0">🔐 Администратор</h2><button class="close" onclick="closeModal('loginModal')">×</button></div><div class="field"><label>Логин</label><input class="input" id="adminUser" value="admin"></div><div class="field" style="margin-top:10px"><label>Пароль</label><input class="input" id="adminPass" type="password"></div><button class="btn primary" style="width:100%;margin-top:12px" onclick="login()">Войти</button><p class="muted">Пароль берётся из защищённой переменной сервера.</p></div></div>
+
+<div class="modal" id="userModal"><div class="modalCard"><div class="modalHead"><h2 id="userTitle" style="margin:0">Пользователь</h2><button class="close" onclick="closeModal('userModal')">×</button></div><div id="userDetails"></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API=localStorage.getItem('xcarAdminApi')||'https://zero1-server-calculator-xcar.onrender.com';
+let auth=localStorage.getItem('xcarAdminAuth')||'', users=[], requests=[], selectedUserId=null, chatTimer=null;
+const $=id=>document.getElementById(id);
+function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2200)}
+function closeModal(id){$(id).classList.remove('open')}
+function openTab(id){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===id));if(id==='users'||id==='chat')loadUsers();if(id==='requests')loadRequests();if(id==='server'||id==='payment'||id==='subscription')loadConfig();if(id==='backups')loadBackups();if(id==='broadcast'){loadUsers();loadBroadcasts()}}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>openTab(b.dataset.tab));
+$('authBtn').onclick=()=>{if(auth){auth='';localStorage.removeItem('xcarAdminAuth');toast('Вы вышли');loadAll()}else $('loginModal').classList.add('open')};
+function headers(){return auth?{Authorization:'Basic '+auth}:{}}
+async function api(path,opt={}){opt.headers={...(opt.headers||{}),...headers()};try{return await fetch(API.replace(/\/$/,'')+path,opt)}catch(e){return {ok:false,status:0,json:async()=>({error:'Сервер недоступен'})}}}
+async function login(){const u=$('adminUser').value.trim(),p=$('adminPass').value;auth=btoa(u+':'+p);localStorage.setItem('xcarAdminAuth',auth);const r=await api('/api/admin/users');if(r.ok){closeModal('loginModal');toast('Администратор подключён');loadAll()}else{auth='';localStorage.removeItem('xcarAdminAuth');toast('Неверный логин или пароль')}}
+function requireAuth(){if(auth)return true;$('loginModal').classList.add('open');return false}
+function daysLeft(ts){return Math.max(0,Math.ceil((Number(ts)-Date.now())/86400000))}
+async function loadUsers(){if(!auth){$('userGrid').innerHTML='<div class="panel">🔒 Войдите для просмотра данных пользователей.</div>';return}const r=await api('/api/admin/users');if(!r.ok){return}users=(await r.json()).users||[];renderUsers();renderSelectedUsers();updateStats()}
+function renderUsers(){const q=($('userSearch')?.value||'').toLowerCase();const list=users.filter(u=>String(u.username+' '+u.email+' '+u.phone).toLowerCase().includes(q));$('userGrid').innerHTML=list.map(u=>`<div class="userCard"><h3>${esc(u.username)} ${u.blocked?'<span class="pill red">Заблокирован</span>':'<span class="pill">Активен</span>'}</h3><p>📞 ${esc(u.phone||'—')}</p><p>✉️ ${esc(u.email||'—')}</p><p>👑 Осталось: <b>${daysLeft(u.subscription_until)} дн.</b></p><div class="row" style="margin-top:9px"><button class="btn" onclick="viewUser(${u.id})">Открыть</button><button class="btn" onclick="editSub(${u.id})">Подписка</button><button class="btn ${u.blocked?'primary':''}" onclick="blockUser(${u.id},${u.blocked?0:1})">${u.blocked?'Разблокировать':'Блокировать'}</button></div></div>`).join('')||'<div class="panel">Пользователей нет.</div>'}
+$('userSearch').addEventListener('input',renderUsers);
+function renderSelectedUsers(){if($('selectedUsers'))$('selectedUsers').innerHTML=users.map(u=>`<label class="userCard"><input type="checkbox" value="${u.id}" class="bcUser"> <b>${esc(u.username)}</b><p>${daysLeft(u.subscription_until)} дн.</p></label>`).join('')}
+async function viewUser(id){if(!requireAuth())return;const r=await api('/api/admin/users/'+id);if(!r.ok)return;const u=await r.json();$('userTitle').textContent='👤 '+u.username;$('userDetails').innerHTML=`<div class="two"><div><p><b>ID:</b> ${u.id}</p><p><b>Телефон:</b> ${esc(u.phone||'—')}</p><p><b>Email:</b> ${esc(u.email||'—')}</p></div><div><p><b>Подписка:</b> ${daysLeft(u.subscription_until)} дней</p><p><b>Регистрация:</b> ${new Date(u.created_at).toLocaleString('ru-RU')}</p><p><b>Статус:</b> ${u.blocked?'Заблокирован':'Активен'}</p></div></div><hr><h3>Данные пользователя</h3><pre style="white-space:pre-wrap;word-break:break-word;background:var(--bg);padding:12px;border-radius:12px">${esc(JSON.stringify(u.payload||{},null,2))}</pre><div class="row"><button class="btn primary" onclick="editSub(${u.id});closeModal('userModal')">Изменить подписку</button><button class="btn" onclick="copyText(${u.id})">Копировать ID</button></div>`;$('userModal').classList.add('open')}
+function copyText(id){navigator.clipboard?.writeText(String(id));toast('ID скопирован')}
+async function editSub(id){if(!requireAuth())return;const u=users.find(x=>x.id===id);if(!u)return;const d=prompt('Сколько дней добавить? Введите отрицательное число для уменьшения:', '30');if(d===null)return;const n=Number(d);if(!Number.isFinite(n))return;const mode=n===0?'set':'add';const r=await api('/api/admin/users/'+id+'/subscription',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode,days:n})});if(r.ok){toast('Подписка изменена');loadAll()}}
+async function blockUser(id,b){if(!requireAuth())return;const r=await api('/api/admin/users/'+id+'/block',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({blocked:!!b})});if(r.ok){toast(b?'Пользователь заблокирован':'Пользователь разблокирован');loadAll()}}
+async function loadRequests(){if(!auth){$('reqBody').innerHTML='<tr><td colspan="7">🔒 Войдите для заявок.</td></tr>';return}const r=await api('/api/admin/requests');if(!r.ok)return;requests=(await r.json()).requests||[];$('reqBody').innerHTML=requests.map(x=>`<tr><td>#${x.id}</td><td><b>${esc(x.username)}</b><br><small>${esc(x.phone||'')}</small></td><td>${x.months} мес.</td><td>${x.price} ₽</td><td>${new Date(x.created_at).toLocaleString('ru-RU')}</td><td>${x.status}</td><td>${x.status==='pending'?`<button class="btn primary" onclick="decide(${x.id},'approved')">Принять</button> <button class="btn red" onclick="decide(${x.id},'rejected')">Отклонить</button>`:''}</td></tr>`).join('')||'<tr><td colspan="7">Заявок нет.</td></tr>';updateStats()}
+async function decide(id,status){if(!requireAuth())return;const r=await api('/api/admin/requests/'+id+'/decision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});if(r.ok){toast(status==='approved'?'Заявка принята':'Заявка отклонена');loadAll()}}
+async function loadConfig(){if(!requireAuth())return;const r=await api('/api/admin/config');if(!r.ok)return;const d=await r.json();$('serverUrl').value=d.clientServerUrl||'';$('trialDays').value=d.trialDays??30;$('monthPrice').value=d.monthPrice??500;$('disc3').value=d.discounts?.[3]??10;$('disc6').value=d.discounts?.[6]??15;$('disc12').value=d.discounts?.[12]??20;$('payBank').value=d.bank||'';$('payCard').value=d.cardNumber||'';$('payRecipient').value=d.recipient||'';$('payPhone').value=d.phone||'';$('payQr').value=d.qrText||'';$('payInstruction').value=d.instruction||''}
+async function saveConfig(extra={}){if(!requireAuth())return false;const body={clientServerUrl:$('serverUrl').value.trim(),trialDays:Number($('trialDays').value),monthPrice:Number($('monthPrice').value),discount_3:Number($('disc3').value),discount_6:Number($('disc6').value),discount_12:Number($('disc12').value),...extra};const r=await api('/api/admin/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(r.ok){toast('Сохранено ✓');return true}toast('Ошибка сохранения');return false}
+async function saveSubscription(){await saveConfig()}
+async function savePayment(){await saveConfig({pay_bank:$('payBank').value,pay_card:$('payCard').value,pay_recipient:$('payRecipient').value,pay_phone:$('payPhone').value,pay_qr_text:$('payQr').value,pay_instruction:$('payInstruction').value})}
+async function saveServer(){await saveConfig()}
+async function applyTrialAll(){if(!requireAuth())return;if(!confirm('Установить выбранный бесплатный период ВСЕМ пользователям?'))return;const r=await api('/api/admin/apply-trial-all',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({days:Number($('trialDays').value)})});if(r.ok){toast('Применено всем пользователям');loadAll()}}
+async function ping(){const u=$('serverUrl').value.trim();$('pingResult').textContent='🟡 Проверка…';const t=performance.now();try{const r=await fetch(u.replace(/\/$/,'')+'/health',{cache:'no-store'});$('pingResult').textContent=r.ok?'🟢 '+Math.round(performance.now()-t)+' мс':'🔴 HTTP '+r.status}catch(e){$('pingResult').textContent='🔴 Недоступен'}}
+async function loadBackups(){if(!auth){$('backupList').innerHTML='<div class="panel">🔒 Войдите для резервных копий.</div>';return}const r=await api('/api/admin/backups');if(!r.ok)return;const d=await r.json();$('backupList').innerHTML=(d.backups||[]).map(b=>`<div class="backupItem"><div><b>${esc(b.name)}</b><div class="muted">${new Date(b.created_at).toLocaleString('ru-RU')} · ${(b.size/1024).toFixed(1)} KB</div></div><button class="btn" onclick="downloadBackup('${encodeURIComponent(b.name)}')">Скачать</button></div>`).join('')||'<div class="panel">Копий пока нет.</div>'}
+async function downloadBackup(n){if(!requireAuth())return;const r=await api('/api/admin/backups/'+n);if(!r.ok){toast('Не удалось скачать');return}const blob=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=decodeURIComponent(n);a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Скачивание запущено')}
+async function makeBackup(){if(!requireAuth())return;const r=await api('/api/admin/backup');if(r.ok){toast('Резервная копия создана');loadBackups()}else toast('Ошибка резервной копии')}
+async function sendBroadcast(){if(!requireAuth())return;const title=$('bcTitle').value.trim(),message=$('bcMessage').value.trim(),target=$('bcTarget').value;const userIds=[...document.querySelectorAll('.bcUser:checked')].map(x=>Number(x.value));let expiresAt=0;if($('bcExpire').value)expiresAt=new Date($('bcExpire').value).getTime();const r=await api('/api/admin/broadcast',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,message,target,userIds,expiresAt})});if(r.ok){toast('Сообщение отправлено');$('bcMessage').value='';loadBroadcasts()}else toast('Ошибка отправки')}
+$('bcTarget').onchange=()=>{$('selectedUsersBox').style.display=$('bcTarget').value==='selected'?'block':'none'}
+$('bcTitle').oninput=()=>$('prevTitle').textContent=$('bcTitle').value||'Сообщение от XCAR';
+$('bcMessage').oninput=()=>$('prevMessage').textContent=$('bcMessage').value||'Здесь появится текст сообщения.';
+async function loadBroadcasts(){if(!auth)return;const r=await api('/api/admin/broadcasts');if(!r.ok)return;const d=await r.json();$('broadcastHistory').innerHTML='<h3>История рассылок</h3>'+(d.broadcasts||[]).slice(0,8).map(x=>`<div class="panel" style="margin:7px 0;padding:10px"><b>${esc(x.title)}</b><p style="margin:4px 0">${esc(x.message)}</p><small class="muted">${new Date(x.created_at).toLocaleString('ru-RU')} · ${x.target}</small></div>`).join('')}
+async function loadChatUsers(){await loadUsers();$('chatUsers').innerHTML=users.map(u=>`<button class="chatUser ${selectedUserId===u.id?'active':''}" onclick="selectChat(${u.id})"><b>${esc(u.username)}</b><br><small class="muted">${daysLeft(u.subscription_until)} дней</small></button>`).join('')||'<span class="muted">Нет пользователей</span>'}
+async function selectChat(id){selectedUserId=id;await loadChatUsers();$('chatHead').textContent='💬 '+(users.find(u=>u.id===id)?.username||'Пользователь');await loadChat();clearInterval(chatTimer);chatTimer=setInterval(loadChat,4000)}
+async function loadChat(){if(!selectedUserId||!auth)return;const r=await api('/api/admin/messages/'+selectedUserId);if(!r.ok)return;const d=await r.json();$('msgs').innerHTML=(d.messages||[]).map(m=>`<div class="msg ${m.from_admin?'admin':''}">${esc(m.message)}<small>${new Date(m.created_at).toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}</small></div>`).join('');$('msgs').scrollTop=$('msgs').scrollHeight}
+async function sendChat(){if(!requireAuth()||!selectedUserId)return;const el=$('chatText'),message=el.value.trim();if(!message)return;const r=await api('/api/admin/message',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({userId:selectedUserId,message})});if(r.ok){el.value='';loadChat()}}
+$('chatText').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat()})
+function updateStats(){const t=Date.now();$('sUsers').textContent=users.length;$('sActive').textContent=users.filter(u=>!u.blocked&&u.subscription_until>t).length;$('sExpired').textContent=users.filter(u=>u.subscription_until<=t).length;$('sRequests').textContent=requests.filter(x=>x.status==='pending').length}
+async function loadAll(){await Promise.all([loadUsers(),loadRequests()]);if(document.querySelector('#backups').classList.contains('active'))loadBackups();if(document.querySelector('#broadcast').classList.contains('active'))loadBroadcasts();if(document.querySelector('#chat').classList.contains('active'))loadChatUsers()}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function applyTheme(){const t=localStorage.getItem('xcarAdminTheme')||'dark';document.documentElement.dataset.theme=t;$('themeBtn').textContent=t==='dark'?'☀️':'🌙'}
+$('themeBtn').onclick=()=>{localStorage.setItem('xcarAdminTheme',(localStorage.getItem('xcarAdminTheme')||'dark')==='dark'?'light':'dark');applyTheme()};applyTheme();
+if(auth)loadAll();
+</script>
+<script>if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));</script>
+</body></html>
