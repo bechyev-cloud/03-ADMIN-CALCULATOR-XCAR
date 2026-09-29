@@ -16,12 +16,101 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}.wrap{max-width:
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.userGrid{grid-template-columns:repeat(2,1fr)}.four{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:620px){.wrap{padding:10px 10px 25px}.top{align-items:flex-start}.brand{font-size:22px}.grid,.userGrid,.two,.three,.four{grid-template-columns:1fr}.chat{grid-template-columns:1fr;height:70vh}.chatUsers{max-height:160px}.msg{max-width:88%}.panel{padding:13px;border-radius:17px}.btn{min-height:46px}.input,.select,.textarea{min-height:46px}}
 </style>
+<style id="xcar-admin-portrait">
+/* ===================================================================
+   XCAR Super Admin — режим ВЕРТИКАЛЬНОГО экрана (телефоны, Samsung
+   Galaxy S25 Ultra и подобные). Горизонтальная ориентация НЕ трогается —
+   все правила ниже строго внутри @media(orientation:portrait).
+   =================================================================== */
+@media (orientation:portrait){
+  html,body{overflow-x:hidden;}
+  .wrap{
+    padding:calc(8px + env(safe-area-inset-top)) calc(10px + env(safe-area-inset-left)) calc(26px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-right));
+    max-width:100%;
+  }
+  .top{
+    align-items:center;flex-wrap:wrap;gap:8px;
+    padding:calc(8px + env(safe-area-inset-top)) 0 12px;
+  }
+  .brand{font-size:19px;line-height:1.15;}
+  .brand small{font-size:10px;}
+  .actions{gap:6px;width:100%;justify-content:flex-start;}
+  .actions .btn{flex:0 0 auto;padding:10px 12px;font-size:13px;min-height:44px;}
+
+  /* Панель вкладок — горизонтальная прокрутка со снапом, крупные удобные кнопки */
+  .panel{padding:12px;border-radius:16px;margin-bottom:10px;}
+  .tabs{
+    gap:6px;margin:0 -12px;padding:0 12px 4px;
+    scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+  }
+  .tab{
+    scroll-snap-align:start;min-height:44px;padding:10px 13px;font-size:12.5px;
+  }
+
+  /* Сетки — в один столбец, крупные поля ввода под палец */
+  .grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .stat{padding:12px;border-radius:14px;}
+  .stat b{font-size:21px;}
+  .userGrid{grid-template-columns:1fr;gap:8px;}
+  .two,.three,.four{grid-template-columns:1fr;gap:8px;}
+
+  .input,.select,.textarea{min-height:48px;padding:12px;font-size:16px;border-radius:14px;}
+  .textarea{min-height:110px;}
+  .btn{min-height:48px;padding:12px 14px;border-radius:14px;}
+  .row{gap:8px;}
+
+  /* Таблицы — подсказка прокрутки вправо */
+  .tableWrap{border-radius:14px;position:relative;}
+  .table{min-width:640px;}
+  .table th,.table td{padding:10px;font-size:13px;}
+
+  /* Модальные окна — полноэкранная нижняя шторка, удобно закрывать одной рукой */
+  .modal{padding:0;align-items:flex-end;}
+  .modalCard,.restoreModalCard,.settingsRestoreCard{
+    width:100%;max-width:none;max-height:92dvh;
+    border-radius:22px 22px 0 0;
+    padding:16px 14px calc(18px + env(safe-area-inset-bottom));
+    margin:0;
+  }
+  .modalHead{position:sticky;top:0;background:var(--card);padding-bottom:8px;margin-bottom:8px;z-index:2;}
+  .close{width:44px;height:44px;}
+
+  /* Чат — вертикальная компоновка, список пользователей сверху компактной лентой */
+  .chat{grid-template-columns:1fr;height:calc(100dvh - 220px);min-height:420px;gap:10px;}
+  .chatSide{max-height:150px;}
+  .chatUsers{max-height:118px;flex-direction:row;overflow-x:auto;overflow-y:hidden;gap:6px;-webkit-overflow-scrolling:touch;}
+  .chatUser{flex:0 0 auto;min-width:160px;}
+  .chatHeadBar{padding:11px 12px;flex-wrap:wrap;}
+  .msg{max-width:90%;}
+  .chatComposeRow{grid-template-columns:1fr;gap:8px;}
+  .chatComposeRow .btn{width:100%;}
+
+  /* Чёрный список — карточки файлов складываются вертикально на узком экране */
+  .blacklistFileItem{flex-direction:column;align-items:stretch;text-align:left;}
+  .blacklistFileItem .row{width:100%;justify-content:flex-start;}
+
+  .userCard{padding:12px;border-radius:15px;}
+  .paymentMode button{min-width:0;flex:1 1 45%;}
+
+  /* Samsung Galaxy S25 Ultra и похожие крупные телефоны — портретная ширина ~480px CSS px */
+  @media (max-width:500px){
+    .brand{font-size:18px;}
+    .grid{grid-template-columns:1fr 1fr;}
+    .actions .btn{font-size:12.5px;padding:9px 10px;}
+    .tab{font-size:12px;padding:9px 11px;}
+  }
+  /* очень узкие экраны — подстраховка */
+  @media (max-width:360px){
+    .grid{grid-template-columns:1fr;}
+  }
+}
+</style>
 </head>
 <body>
 <div class="wrap">
 <header class="top">
  <div class="brand">XCAR <span>Super Admin</span><small>Управление • подписки • сервер • резервные копии</small></div>
- <div class="actions"><button class="btn" id="themeBtn">☀️</button><button class="btn blue" id="authBtn">🔐 Администратор</button></div>
+ <div class="actions"><button class="btn dark" id="forceUpdateUsersBtn" title="Все открытые пользовательские приложения очистят кэш и перезагрузятся в течение минуты">🔄 Обновить все приложения пользователей</button><button class="btn" id="themeBtn">☀️</button><button class="btn blue" id="authBtn">🔐 Администратор</button></div>
 </header>
 
 <div class="guest" id="guestNotice"><b>👁 Просмотр без входа</b><div class="muted">Панель открывается сразу. Изменяющие действия защищены авторизацией.</div></div>
@@ -126,11 +215,12 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}.wrap{max-width:
 <section class="section" id="blacklist">
  <div class="two">
   <div class="panel">
-   <div class="row" style="justify-content:space-between;align-items:flex-start"><div><h2 style="margin:0">🚫 Чёрный список</h2><div class="muted" style="margin-top:4px">Загрузите TXT или HTML. Пользовательское приложение автоматически получает файлы и ищет по всей базе.</div></div><button class="btn" onclick="loadBlacklistFiles()">↻ Обновить</button></div>
-   <div class="field" style="margin-top:14px"><label>Добавить файл</label><div class="row"><label class="btn primary" for="blacklistFile">📄 Выбрать TXT / HTML</label><input id="blacklistFile" type="file" accept=".txt,.html,.htm,text/plain,text/html" style="display:none" onchange="pickBlacklistFile(this)"><span class="muted" id="blacklistFileHint">Файл не выбран</span></div></div>
-   <div class="field" style="margin-top:10px"><label>Название файла</label><input class="input" id="blacklistFileName" placeholder="Например: Чёрный список 2026.html"></div>
+   <div class="row" style="justify-content:space-between;align-items:flex-start"><div><h2 style="margin:0">🚫 Чёрный список</h2><div class="muted" style="margin-top:4px">Загрузите TXT или HTML — можно сразу несколько файлов. Пользовательское приложение автоматически получает файлы и ищет по всей базе.</div></div><button class="btn" onclick="loadBlacklistFiles()">↻ Обновить</button></div>
+   <div class="field" style="margin-top:14px"><label>Добавить файлы</label><div class="row"><label class="btn primary" for="blacklistFile">📄 Выбрать TXT / HTML (можно несколько)</label><input id="blacklistFile" type="file" accept=".txt,.html,.htm,text/plain,text/html" multiple style="display:none" onchange="pickBlacklistFile(this)"><span class="muted" id="blacklistFileHint">Файлы не выбраны</span></div></div>
+   <div id="blacklistQueueList" style="display:grid;gap:6px;margin-top:10px"></div>
+   <div class="field" style="margin-top:10px" id="blacklistFileNameField"><label>Название файла</label><input class="input" id="blacklistFileName" placeholder="Например: Чёрный список 2026.html"></div>
    <button class="btn primary" style="margin-top:12px;width:100%" onclick="uploadBlacklistFile()">☁️ Загрузить на сервер</button>
-   <div class="muted" style="font-size:11px;margin-top:8px">После загрузки файл сразу становится доступен всем пользователям, а поиск работает внутри его текста.</div>
+   <div class="muted" style="font-size:11px;margin-top:8px">После загрузки файлы сразу становятся доступны всем пользователям, а поиск работает внутри их текста.</div>
    <div style="height:1px;background:var(--line);margin:15px 0"></div>
    <div class="field"><label>📅 Дата и время обновления базы для клиентов</label><input class="input" id="blacklistUpdateAt" type="datetime-local"><div class="muted" style="font-size:11px;margin-top:6px">Эту дату увидят пользователи вверху раздела «Чёрный список». Если очистить поле, будет использоваться время последнего загруженного файла.</div></div>
    <div class="row" style="margin-top:10px"><button class="btn blue" onclick="saveBlacklistUpdateAt()">💾 Сохранить дату для клиентов</button><button class="btn" onclick="resetBlacklistUpdateAt()">↺ Автоматическая дата</button></div>
@@ -142,6 +232,55 @@ button,input,textarea,select{font:inherit}button{cursor:pointer}.wrap{max-width:
   </div>
  </div>
  <div class="panel" style="margin-top:13px"><h3 style="margin-top:0">🔎 Как ищет пользователь</h3><div class="muted">Например, запрос <b>«Бечиев Идрис Масхудович»</b> проверяется по содержимому всех загруженных файлов. Если найдены все слова или точная фраза, пользователь сразу получает карточку с названием файла и фрагментом найденного текста.</div></div>
+ <div class="panel" style="margin-top:13px">
+  <div class="row" style="justify-content:space-between;align-items:flex-start"><div><h3 style="margin:0">🎨 Отображение совпадений</h3><div class="muted" style="margin-top:4px">Настройки применяются сразу во всех 3 приложениях (пользовательское приложение подтягивает их с сервера).</div></div></div>
+  <div class="four" style="margin-top:12px">
+   <div class="field"><label>Цвет текста совпадения</label><input class="input" id="hlColor" type="color" value="#7f1d1d" oninput="renderHlPreview()" style="height:48px;padding:4px"></div>
+   <div class="field"><label>Цвет фона совпадения</label><input class="input" id="hlBg" type="color" value="#fecaca" oninput="renderHlPreview()" style="height:48px;padding:4px"></div>
+   <div class="field"><label>Размер шрифта совпадения (%)</label><input class="input" id="hlSize" type="number" min="100" max="500" step="10" value="300" oninput="renderHlPreview()"></div>
+   <div class="field"><label>Начало отображения (символов до совпадения)</label><input class="input" id="hlBefore" type="number" min="0" max="500" step="5" value="0" oninput="renderHlPreview()"></div>
+  </div>
+  <div class="two" style="margin-top:10px">
+   <div class="field"><label>Конец отображения</label><select class="select" id="hlAfterMode" onchange="renderHlPreview()"><option value="line">До конца записи (строки)</option><option value="chars">Фиксированное число символов</option></select></div>
+   <div class="field"><label>…символов после совпадения (если выбран режим «фиксированное число»)</label><input class="input" id="hlAfterChars" type="number" min="10" max="2000" step="10" value="200" oninput="renderHlPreview()"></div>
+  </div>
+  <div style="height:1px;background:var(--line);margin:15px 0"></div>
+  <div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">✂️ Текстовые границы фрагмента (по желанию)</h3><label class="row" style="gap:7px;cursor:pointer"><input type="checkbox" id="hlUseTextBoundaries" onchange="renderHlPreview()" style="width:18px;height:18px"> <span class="muted">Включить</span></label></div>
+  <div class="muted" style="font-size:11px;margin-top:4px">Если включено — фрагмент начинается сразу ПОСЛЕ указанного «начального текста» и заканчивается сразу ПОСЛЕ указанного «конечного текста» (если они найдены рядом с совпадением). Пустое поле — используются обычные настройки выше для этой границы.</div>
+  <div class="two" style="margin-top:10px">
+   <div class="field"><label>Начальный текст (фрагмент начинается после него)</label><input class="input" id="hlStartText" placeholder="Например: ФИО:" oninput="renderHlPreview()"></div>
+   <div class="field"><label>Конечный текст (фрагмент заканчивается после него)</label><input class="input" id="hlEndText" placeholder="Например: ;" oninput="renderHlPreview()"></div>
+  </div>
+  <div style="height:1px;background:var(--line);margin:15px 0"></div>
+  <div class="row" style="justify-content:space-between;align-items:center"><h3 style="margin:0">🗂️ Вариант отображения карточки</h3><label class="row" style="gap:7px;cursor:pointer"><input type="checkbox" id="hlCardVariantEnabled" onchange="renderHlPreview()" style="width:18px;height:18px"> <span class="muted">Включить</span></label></div>
+  <div class="field" style="margin-top:10px"><label>Вариант карточки</label><select class="select" id="hlCardVariant" onchange="renderHlPreview()">
+   <option value="standard">Стандартная</option>
+   <option value="compact">Компактная</option>
+   <option value="detailed">Подробная</option>
+   <option value="accent">Акцент на совпадении</option>
+  </select></div>
+  <div class="four" style="margin-top:10px">
+   <div class="field"><label>Обводка карточки — цвет</label><input class="input" id="hlCardBorderColor" type="color" value="#e4d9f4" oninput="renderHlPreview()" style="height:48px;padding:4px"></div>
+   <div class="field"><label>Обводка карточки — толщина (px)</label><input class="input" id="hlCardBorderWidth" type="number" min="0" max="10" step="1" value="1" oninput="renderHlPreview()"></div>
+   <div class="field"><label>Углы карточки</label><select class="select" id="hlCardCorner" onchange="renderHlPreview()"><option value="rounded">Плавные</option><option value="sharp">Острые</option></select></div>
+   <div class="field"><label>Расположение совпадения</label><select class="select" id="hlMatchPosition" onchange="renderHlPreview()"><option value="inline">В тексте (как обычно)</option><option value="above">Отдельно над карточкой</option></select></div>
+  </div>
+  <div class="two" style="margin-top:10px">
+   <div class="field"><label>Цвет остального текста</label><input class="input" id="hlContextColor" type="color" value="#4b315e" oninput="renderHlPreview()" style="height:48px;padding:4px"></div>
+   <div class="field"><label>Фон остального текста</label><input class="input" id="hlContextBg" type="color" value="#ffffff" oninput="renderHlPreview()" style="height:48px;padding:4px"></div>
+  </div>
+  <div class="field" style="margin-top:12px"><label>Предпросмотр карточки результата</label>
+   <div class="blacklistResultFile" id="hlPreviewCard" style="border:1px solid var(--line);border-radius:16px;padding:12px">
+    <div class="blacklistResultHead" style="display:flex;justify-content:space-between;margin-bottom:8px"><b>📄 Пример файла.txt</b><span class="muted">1 совпадение</span></div>
+    <div id="hlPreviewBox" style="font-size:15px;line-height:1.5">
+     <div id="hlPreviewAboveBadges" style="display:none;margin-bottom:8px"></div>
+     <div><span id="hlPreviewContextBefore">…текст перед… </span><span id="hlPreviewSpan">Иванов Иван</span><span id="hlPreviewContextAfter"> …текст после совпадения…</span></div>
+    </div>
+   </div>
+  </div>
+  <div class="row" style="margin-top:12px"><button class="btn primary" onclick="saveBlacklistHighlight()">💾 Сохранить настройки отображения</button><button class="btn" onclick="resetBlacklistHighlight()">↺ Сбросить по умолчанию</button></div>
+  <div class="muted" id="hlStatus" style="font-size:11px;margin-top:8px">Настройки ещё не загружены.</div>
+ </div>
 </section>
 
 <section class="section" id="subscription">
@@ -208,13 +347,26 @@ function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setT
 function closeModal(id){$(id).classList.remove('open')}
 function openTab(id){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===id));if(id==='users')loadUsers();if(id==='chat')loadChatUsers();if(id==='requests')loadRequests();if(id==='server'||id==='payment'||id==='subscription')loadConfig();if(id==='settingsRestore')loadSettingsRestoreUsers();if(id==='backups')loadBackups();if(id==='broadcast'){loadUsers();loadBroadcasts()}if(id==='blacklist'){loadBlacklistFiles();loadBlacklistMeta()}}
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>openTab(b.dataset.tab));
-$('authBtn').onclick=()=>{if(auth){auth='';localStorage.removeItem('xcarAdminAuth');toast('Вы вышли');loadAll()}else $('loginModal').classList.add('open')};
+// показываем прямо в кнопке и в баннере наверху, вошёл администратор или нет — раньше кнопка
+// всегда выглядела одинаково ("🔐 Администратор"), и после успешного входа не было видно,
+// что вход реально произошёл, из-за чего казалось, что вкладка "Пользователи" вечно требует входа
+function updateAuthUI(){
+const btn=$('authBtn'),guest=$('guestNotice');
+if(auth){
+if(btn){btn.textContent='✅ Администратор';btn.classList.remove('blue');btn.classList.add('primary');btn.title='Нажмите, чтобы выйти';}
+if(guest) guest.style.display='none';
+}else{
+if(btn){btn.textContent='🔐 Войти как администратор';btn.classList.add('blue');btn.classList.remove('primary');btn.title='Вход администратора';}
+if(guest) guest.style.display='';
+}
+}
+$('authBtn').onclick=()=>{if(auth){auth='';localStorage.removeItem('xcarAdminAuth');updateAuthUI();toast('Вы вышли');loadAll()}else $('loginModal').classList.add('open')};
 function headers(){return auth?{Authorization:'Basic '+auth}:{}}
 async function api(path,opt={}){opt.headers={...(opt.headers||{}),...headers()};try{return await fetch(API.replace(/\/$/,'')+path,opt)}catch(e){return {ok:false,status:0,json:async()=>({error:'Сервер недоступен'})}}}
-async function login(){const u=$('adminUser').value.trim(),p=$('adminPass').value;auth=btoa(u+':'+p);localStorage.setItem('xcarAdminAuth',auth);const r=await api('/api/admin/users');if(r.ok){closeModal('loginModal');toast('Администратор подключён');loadAll()}else{auth='';localStorage.removeItem('xcarAdminAuth');toast('Неверный логин или пароль')}}
+async function login(){const u=$('adminUser').value.trim(),p=$('adminPass').value;auth=btoa(u+':'+p);localStorage.setItem('xcarAdminAuth',auth);const r=await api('/api/admin/users');if(r.ok){closeModal('loginModal');updateAuthUI();toast('Администратор подключён');loadAll()}else{auth='';localStorage.removeItem('xcarAdminAuth');updateAuthUI();toast('Неверный логин или пароль')}}
 function requireAuth(){if(auth)return true;$('loginModal').classList.add('open');return false}
 function daysLeft(ts){return Math.max(0,Math.ceil((Number(ts)-Date.now())/86400000))}
-async function loadUsers(){if(!auth){$('userGrid').innerHTML='<div class="panel">🔒 Войдите для просмотра данных пользователей.</div>';return}const r=await api('/api/admin/users');if(!r.ok){return}users=(await r.json()).users||[];renderUsers();renderSelectedUsers();updateStats()}
+async function loadUsers(){if(!auth){$('userGrid').innerHTML='<div class="panel">🔒 Нужен вход администратора, чтобы увидеть пользователей.<div style="margin-top:10px"><button class="btn primary" onclick="document.getElementById(\'loginModal\').classList.add(\'open\')">Войти</button></div></div>';return}const r=await api('/api/admin/users');if(!r.ok){if(r.status===401){auth='';localStorage.removeItem('xcarAdminAuth');updateAuthUI();$('userGrid').innerHTML='<div class="panel">🔒 Сессия администратора истекла, войдите заново.<div style="margin-top:10px"><button class="btn primary" onclick="document.getElementById(\'loginModal\').classList.add(\'open\')">Войти</button></div></div>';}return}users=(await r.json()).users||[];renderUsers();renderSelectedUsers();updateStats()}
 function renderUsers(){const q=($('userSearch')?.value||'').toLowerCase();const list=users.filter(u=>String(u.username+' '+u.email+' '+u.phone).toLowerCase().includes(q));$('userGrid').innerHTML=list.map(u=>`<div class="userCard"><h3>${esc(u.username)} ${u.blocked?'<span class="pill red">Заблокирован</span>':'<span class="pill">Активен</span>'}</h3><p>📞 ${esc(u.phone||'—')}</p><p>✉️ ${esc(u.email||'—')}</p><p>👑 Осталось: <b>${daysLeft(u.subscription_until)} дн.</b></p><div class="row" style="margin-top:9px"><button class="btn" onclick="viewUser(${u.id})">Открыть</button><button class="btn" onclick="editSub(${u.id})">Подписка</button><button class="btn ${u.blocked?'primary':''}" onclick="blockUser(${u.id},${u.blocked?0:1})">${u.blocked?'Разблокировать':'Блокировать'}</button></div></div>`).join('')||'<div class="panel">Пользователей нет.</div>'}
 $('userSearch').addEventListener('input',renderUsers);
 function renderSelectedUsers(){if($('selectedUsers'))$('selectedUsers').innerHTML=users.map(u=>`<label class="userCard"><input type="checkbox" value="${u.id}" class="bcUser"> <b>${esc(u.username)}</b><p>${daysLeft(u.subscription_until)} дн.</p></label>`).join('')}
@@ -222,7 +374,7 @@ async function viewUser(id){if(!requireAuth())return;const r=await api('/api/adm
 function copyText(id){navigator.clipboard?.writeText(String(id));toast('ID скопирован')}
 async function editSub(id){if(!requireAuth())return;const u=users.find(x=>x.id===id);if(!u)return;const d=prompt('Сколько дней добавить? Введите отрицательное число для уменьшения:', '30');if(d===null)return;const n=Number(d);if(!Number.isFinite(n))return;const mode=n===0?'set':'add';const r=await api('/api/admin/users/'+id+'/subscription',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mode,days:n})});if(r.ok){toast('Подписка изменена');loadAll()}}
 async function blockUser(id,b){if(!requireAuth())return;const r=await api('/api/admin/users/'+id+'/block',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({blocked:!!b})});if(r.ok){toast(b?'Пользователь заблокирован':'Пользователь разблокирован');loadAll()}}
-async function loadRequests(){if(!auth){$('reqBody').innerHTML='<tr><td colspan="7">🔒 Войдите для заявок.</td></tr>';return}const r=await api('/api/admin/requests');if(!r.ok)return;requests=(await r.json()).requests||[];$('reqBody').innerHTML=requests.map(x=>`<tr><td>#${x.id}</td><td><b>${esc(x.username)}</b><br><small>${esc(x.phone||'')}</small></td><td>${x.months} мес.</td><td>${x.price} ₽</td><td>${new Date(x.created_at).toLocaleString('ru-RU')}</td><td>${x.status}</td><td>${x.status==='pending'?`<button class="btn primary" onclick="decide(${x.id},'approved')">Принять</button> <button class="btn red" onclick="decide(${x.id},'rejected')">Отклонить</button>`:''}</td></tr>`).join('')||'<tr><td colspan="7">Заявок нет.</td></tr>';updateStats()}
+async function loadRequests(){if(!auth){$('reqBody').innerHTML='<tr><td colspan="7">🔒 Нужен вход администратора для заявок. <button class="btn primary" style="margin-left:8px" onclick="document.getElementById(\'loginModal\').classList.add(\'open\')">Войти</button></td></tr>';return}const r=await api('/api/admin/requests');if(!r.ok)return;requests=(await r.json()).requests||[];$('reqBody').innerHTML=requests.map(x=>`<tr><td>#${x.id}</td><td><b>${esc(x.username)}</b><br><small>${esc(x.phone||'')}</small></td><td>${x.months} мес.</td><td>${x.price} ₽</td><td>${new Date(x.created_at).toLocaleString('ru-RU')}</td><td>${x.status}</td><td>${x.status==='pending'?`<button class="btn primary" onclick="decide(${x.id},'approved')">Принять</button> <button class="btn red" onclick="decide(${x.id},'rejected')">Отклонить</button>`:''}</td></tr>`).join('')||'<tr><td colspan="7">Заявок нет.</td></tr>';updateStats()}
 async function decide(id,status){if(!requireAuth())return;const r=await api('/api/admin/requests/'+id+'/decision',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});if(r.ok){toast(status==='approved'?'Заявка принята':'Заявка отклонена');loadAll()}}
 let paymentQrMode='text',paymentQrImage='';
 function setPayMode(mode){paymentQrMode=mode;$('payModeText').classList.toggle('active',mode==='text');$('payModeImage').classList.toggle('active',mode==='image');$('payTextBox').style.display=mode==='text'?'block':'none';$('payImageBox').style.display=mode==='image'?'block':'none'}
@@ -264,22 +416,64 @@ function chatTargetChanged(){const t=$('chatTarget').value;if(t!=='single'){$('c
 async function sendChat(){if(!requireAuth())return;const target=$('chatTarget').value,message=$('chatText').value.trim();if(target==='single'&&!selectedUserId){toast('Сначала выберите пользователя');return}if(!message&&!chatFileData){toast('Введите сообщение или прикрепите файл');return}const body={target,userId:selectedUserId,message};if(chatFileData)body.file=chatFileData;const r=await api(target==='single'?'/api/admin/message':'/api/admin/message-bulk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(r.ok){const d=await r.json();$('chatText').value='';clearChatFile();toast(target==='single'?'Сообщение отправлено ✓':`Отправлено пользователям: ${d.sent||0}`);if(target==='single')loadChat()}else{const d=await r.json().catch(()=>({}));toast(d.error||'Ошибка отправки')}}
 $('chatSearch').addEventListener('input',renderChatUsers);$('chatText').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}})
 
-let blacklistUploadData=null;
+// очередь файлов для загрузки в чёрный список — раньше можно было выбрать только один файл
+// за раз, теперь выбор нескольких TXT/HTML сразу складывает их в очередь, и "Загрузить на
+// сервер" отправляет их все по очереди одним нажатием
+let blacklistUploadQueue=[];
+function renderBlacklistQueue(){
+ const box=$('blacklistQueueList'); if(!box)return;
+ const nameField=$('blacklistFileNameField');
+ if(!blacklistUploadQueue.length){
+ box.innerHTML='';
+ $('blacklistFileHint').textContent='Файлы не выбраны';
+ if(nameField) nameField.style.display='';
+ return;
+ }
+ // поле "Название файла" имеет смысл только когда файл один — при нескольких файлах
+ // используем оригинальные имена каждого файла
+ if(nameField) nameField.style.display=blacklistUploadQueue.length===1?'':'none';
+ $('blacklistFileHint').textContent=`Выбрано файлов: ${blacklistUploadQueue.length}`;
+ box.innerHTML=blacklistUploadQueue.map((f,i)=>`<div class="blacklistFileItem"><div style="min-width:0"><b>📄 ${esc(f.name)}</b><div class="blacklistFileMeta">${esc(f.mime)} · ${(f.data.length*0.75/1024).toFixed(1)} КБ</div></div><button type="button" class="btn red" onclick="removeBlacklistQueueItem(${i})">✕</button></div>`).join('');
+}
+function removeBlacklistQueueItem(i){blacklistUploadQueue.splice(i,1);renderBlacklistQueue();}
 function pickBlacklistFile(input){
- const f=input.files?.[0]; if(!f)return;
- if(f.size>5*1024*1024){toast('Файл больше 5 МБ');input.value='';return;}
- if(!/\.(txt|html?|htm)$/i.test(f.name)){toast('Разрешены только TXT и HTML');input.value='';return;}
- const reader=new FileReader();reader.onload=()=>{blacklistUploadData={name:f.name,mime:f.type||(/\.html?$/i.test(f.name)?'text/html':'text/plain'),data:String(reader.result).split(',')[1]||btoa(unescape(encodeURIComponent(String(reader.result))))};$('blacklistFileName').value=f.name;$('blacklistFileHint').textContent=`${f.name} · ${(f.size/1024).toFixed(1)} КБ`;};reader.readAsDataURL(f);
+ const files=Array.from(input.files||[]); if(!files.length)return;
+ let rejected=0,pending=files.length;
+ files.forEach(f=>{
+ if(f.size>5*1024*1024){rejected++;pending--;if(pending===0)finish();return;}
+ if(!/\.(txt|html?|htm)$/i.test(f.name)){rejected++;pending--;if(pending===0)finish();return;}
+ const reader=new FileReader();
+ reader.onload=()=>{
+ blacklistUploadQueue.push({name:f.name,mime:f.type||(/\.html?$/i.test(f.name)?'text/html':'text/plain'),data:String(reader.result).split(',')[1]||btoa(unescape(encodeURIComponent(String(reader.result))))});
+ pending--;
+ if(pending===0)finish();
+ };
+ reader.onerror=()=>{rejected++;pending--;if(pending===0)finish();};
+ reader.readAsDataURL(f);
+ });
+ function finish(){
+ if($('blacklistFileName')&&blacklistUploadQueue.length===1) $('blacklistFileName').value=blacklistUploadQueue[blacklistUploadQueue.length-1].name;
+ renderBlacklistQueue();
+ if(rejected) toast(rejected===1?'Один файл пропущен (не TXT/HTML или больше 5 МБ)':`Пропущено файлов: ${rejected} (не TXT/HTML или больше 5 МБ)`);
+ input.value='';
+ }
 }
 async function uploadBlacklistFile(){
- if(!requireAuth())return; if(!blacklistUploadData){toast('Сначала выберите TXT или HTML');return;}
- const name=($('blacklistFileName').value||blacklistUploadData.name).trim();
- const r=await api('/api/admin/blacklist/files',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...blacklistUploadData,name})});
- const d=await r.json().catch(()=>({})); if(r.ok){toast('Файл загружен ✓');$('blacklistFile').value='';blacklistUploadData=null;$('blacklistFileHint').textContent='Файл не выбран';loadBlacklistFiles();}else toast(d.error||'Не удалось загрузить файл');
+ if(!requireAuth())return; if(!blacklistUploadQueue.length){toast('Сначала выберите TXT или HTML');return;}
+ let ok=0,fail=0;
+ for(let i=0;i<blacklistUploadQueue.length;i++){
+ const item=blacklistUploadQueue[i];
+ const name=(blacklistUploadQueue.length===1?($('blacklistFileName').value||item.name):item.name).trim();
+ const r=await api('/api/admin/blacklist/files',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...item,name})});
+ if(r.ok) ok++; else fail++;
+ }
+ toast(fail?`Загружено ${ok} из ${ok+fail} файлов`:`Загружено файлов: ${ok} ✓`);
+ blacklistUploadQueue=[];$('blacklistFile').value='';$('blacklistFileName').value='';renderBlacklistQueue();loadBlacklistFiles();
 }
 async function loadBlacklistFiles(){
  loadBlacklistMeta();
- const box=$('blacklistFilesList'); if(!box)return; if(!auth){box.innerHTML='<div class="muted">🔒 Войдите как администратор для управления файлами.</div>';return;}
+ loadBlacklistHighlight();
+ const box=$('blacklistFilesList'); if(!box)return; if(!auth){box.innerHTML='<div class="muted">🔒 Нужен вход администратора для управления файлами. <button class="btn primary" style="margin-top:8px" onclick="document.getElementById(\'loginModal\').classList.add(\'open\')">Войти</button></div>';return;}
  const r=await api('/api/admin/blacklist/files'); if(!r.ok){box.innerHTML='<div class="muted">Не удалось загрузить список файлов.</div>';return;}
  const d=await r.json(); const files=d.files||[]; $('blacklistCount').textContent=`${files.length} ${files.length===1?'файл':'файлов'}`;
  box.innerHTML=files.map(f=>`<div class="blacklistFileItem"><div style="min-width:0"><b>📄 ${esc(f.name)}</b><div class="blacklistFileMeta">${esc(f.mime||'text/plain')} · ${(Number(f.size||0)/1024).toFixed(1)} КБ · обновлён ${new Date(f.updated_at).toLocaleString('ru-RU')}</div></div><div class="row"><button class="btn" onclick="previewBlacklistFile(${f.id})">👁</button><button class="btn red" onclick="deleteBlacklistFile(${f.id},'${esc(f.name).replace(/'/g,"\\'")}')">Удалить</button></div></div>`).join('')||'<div class="blacklistDrop">📂 Пока нет загруженных файлов</div>';
@@ -305,6 +499,142 @@ async function resetBlacklistUpdateAt(){
  if(!requireAuth())return;
  const r=await api('/api/admin/blacklist/meta',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lastUpdatedAt:null})});
  if(r.ok){toast('Включена автоматическая дата ✓');loadBlacklistMeta();}else toast('Не удалось изменить дату');
+}
+const DEFAULT_HL={
+ color:'#7f1d1d',bg:'#fecaca',sizePercent:150,before:0,afterMode:'line',afterChars:200,
+ boundaryMode:'text',startText:'',endText:'',
+ cardVariantEnabled:true,cardVariant:'standard',
+ cardBorderColor:'#e4d9f4',cardBorderWidth:1,cardCorner:'rounded',
+ matchPosition:'above',contextColor:'#7f1d1d',contextBg:''
+};
+const HL_CARD_VARIANT_STYLES={
+ standard:{card:'padding:12px',head:'display:flex;justify-content:space-between;margin-bottom:8px',box:'font-size:15px;line-height:1.5'},
+ compact:{card:'padding:7px 9px',head:'display:flex;justify-content:space-between;margin-bottom:4px;font-size:12px',box:'font-size:12px;line-height:1.3'},
+ detailed:{card:'padding:16px;box-shadow:0 8px 22px rgba(0,0,0,.08)',head:'display:flex;justify-content:space-between;margin-bottom:10px',box:'font-size:16px;line-height:1.7'},
+ accent:{card:'padding:12px;border-left-width:5px!important',head:'display:flex;justify-content:space-between;margin-bottom:8px',box:'font-size:15px;line-height:1.5'}
+};
+function renderHlPreview(){
+ const color=$('hlColor')?.value||DEFAULT_HL.color;
+ const bg=$('hlBg')?.value||DEFAULT_HL.bg;
+ const size=Number($('hlSize')?.value)||DEFAULT_HL.sizePercent;
+ const span=$('hlPreviewSpan');
+ if(span) span.style.cssText=`color:${color};background:${bg};font-size:${size}%;padding:3px 8px;border-radius:8px;font-weight:900;`;
+ const afterMode=$('hlAfterMode')?.value||'line';
+ const afterField=$('hlAfterChars'); if(afterField) afterField.disabled=(afterMode!=='chars');
+ const useTextBoundaries=!!$('hlUseTextBoundaries')?.checked;
+ const startField=$('hlStartText'), endField=$('hlEndText');
+ if(startField) startField.disabled=!useTextBoundaries;
+ if(endField) endField.disabled=!useTextBoundaries;
+ const variantEnabled=!!$('hlCardVariantEnabled')?.checked;
+ [$('hlCardVariant'),$('hlCardBorderColor'),$('hlCardBorderWidth'),$('hlCardCorner'),$('hlMatchPosition'),$('hlContextColor'),$('hlContextBg')].forEach(el=>{if(el)el.disabled=!variantEnabled;});
+ const variantSelect=$('hlCardVariant');
+ const card=$('hlPreviewCard');
+ const matchPosition=$('hlMatchPosition')?.value||'inline';
+ const contextColor=$('hlContextColor')?.value||'';
+ const contextBg=$('hlContextBg')?.value||'';
+ if(card){
+  const variant=variantEnabled?(variantSelect?.value||'standard'):'standard';
+  const style=HL_CARD_VARIANT_STYLES[variant]||HL_CARD_VARIANT_STYLES.standard;
+  const borderColor=variantEnabled?($('hlCardBorderColor')?.value||DEFAULT_HL.cardBorderColor):'var(--line)';
+  const borderWidth=variantEnabled?(Number($('hlCardBorderWidth')?.value)||0):1;
+  const corner=variantEnabled?($('hlCardCorner')?.value||'rounded'):'rounded';
+  const radius=corner==='sharp'?'6px':'16px';
+  card.style.cssText=`border-style:solid;border-color:${borderColor};border-width:${borderWidth}px;border-radius:${radius};${style.card}`;
+  const head=card.querySelector('.blacklistResultHead'); if(head) head.style.cssText=style.head;
+  const box=$('hlPreviewBox'); if(box) box.style.cssText=`${style.box}${variantEnabled&&contextBg?`;background:${contextBg}`:''}`;
+ }
+ // показываем в предпросмотре, как будет вырезан фрагмент по текстовым границам
+ const startTextVal=useTextBoundaries?($('hlStartText')?.value||''):'';
+ const endTextVal=useTextBoundaries?($('hlEndText')?.value||''):'';
+ const contextBefore=startTextVal?`(после «${startTextVal}»)… `:'…текст перед… ';
+ const contextAfter=endTextVal?` …(до «${endTextVal}» включительно)`:' …текст после совпадения…';
+ const contextStyle=variantEnabled&&contextColor?`color:${contextColor}`:'';
+ const badgesBox=$('hlPreviewAboveBadges'), beforeEl=$('hlPreviewContextBefore'), afterEl=$('hlPreviewContextAfter');
+ if(variantEnabled&&matchPosition==='above'){
+  if(badgesBox){badgesBox.style.display='block';badgesBox.innerHTML=`<span id="hlPreviewSpanAbove"></span>`;}
+  if(beforeEl){beforeEl.textContent='';beforeEl.style.cssText=contextStyle;}
+  if(afterEl){afterEl.textContent=`${contextBefore}${contextAfter}`.trim();afterEl.style.cssText=contextStyle;}
+  if(span) span.style.display='none';
+  const spanAbove=$('hlPreviewSpanAbove');
+  if(spanAbove) spanAbove.outerHTML=`<span id="hlPreviewSpanAbove" style="color:${color};background:${bg};font-size:${size}%;padding:3px 8px;border-radius:8px;font-weight:900;display:inline-block;">Иванов Иван</span>`;
+ }else{
+  if(badgesBox){badgesBox.style.display='none';badgesBox.innerHTML='';}
+  if(span) span.style.display='';
+  if(beforeEl){beforeEl.textContent=contextBefore;beforeEl.style.cssText=contextStyle;}
+  if(afterEl){afterEl.textContent=contextAfter;afterEl.style.cssText=contextStyle;}
+ }
+}
+async function loadBlacklistHighlight(){
+ if(!auth)return;
+ const r=await api('/api/admin/blacklist/highlight'); if(!r.ok)return;
+ const d=await r.json().catch(()=>({})); const hl={...DEFAULT_HL,...(d.highlight||{})};
+ if($('hlColor'))$('hlColor').value=hl.color;
+ if($('hlBg'))$('hlBg').value=hl.bg;
+ if($('hlSize'))$('hlSize').value=hl.sizePercent;
+ if($('hlBefore'))$('hlBefore').value=hl.before;
+ if($('hlAfterMode'))$('hlAfterMode').value=hl.afterMode;
+ if($('hlAfterChars'))$('hlAfterChars').value=hl.afterChars;
+ if($('hlUseTextBoundaries'))$('hlUseTextBoundaries').checked=(hl.boundaryMode==='text');
+ if($('hlStartText'))$('hlStartText').value=hl.startText||'';
+ if($('hlEndText'))$('hlEndText').value=hl.endText||'';
+ if($('hlCardVariantEnabled'))$('hlCardVariantEnabled').checked=!!hl.cardVariantEnabled;
+ if($('hlCardVariant'))$('hlCardVariant').value=hl.cardVariant||'standard';
+ if($('hlCardBorderColor'))$('hlCardBorderColor').value=hl.cardBorderColor||DEFAULT_HL.cardBorderColor;
+ if($('hlCardBorderWidth'))$('hlCardBorderWidth').value=(hl.cardBorderWidth??DEFAULT_HL.cardBorderWidth);
+ if($('hlCardCorner'))$('hlCardCorner').value=hl.cardCorner||'rounded';
+ if($('hlMatchPosition'))$('hlMatchPosition').value=hl.matchPosition||'inline';
+ if($('hlContextColor'))$('hlContextColor').value=hl.contextColor||'#4b315e';
+ if($('hlContextBg'))$('hlContextBg').value=hl.contextBg||'#ffffff';
+ renderHlPreview();
+ if($('hlStatus'))$('hlStatus').textContent='Текущие настройки загружены ✓';
+}
+async function saveBlacklistHighlight(){
+ if(!requireAuth())return;
+ const body={
+  color:$('hlColor')?.value||DEFAULT_HL.color,
+  bg:$('hlBg')?.value||DEFAULT_HL.bg,
+  sizePercent:Number($('hlSize')?.value)||DEFAULT_HL.sizePercent,
+  before:Number($('hlBefore')?.value)||0,
+  afterMode:$('hlAfterMode')?.value==='chars'?'chars':'line',
+  afterChars:Number($('hlAfterChars')?.value)||DEFAULT_HL.afterChars,
+  boundaryMode:$('hlUseTextBoundaries')?.checked?'text':'auto',
+  startText:$('hlStartText')?.value||'',
+  endText:$('hlEndText')?.value||'',
+  cardVariantEnabled:!!$('hlCardVariantEnabled')?.checked,
+  cardVariant:$('hlCardVariant')?.value||'standard',
+  cardBorderColor:$('hlCardBorderColor')?.value||DEFAULT_HL.cardBorderColor,
+  cardBorderWidth:Number($('hlCardBorderWidth')?.value),
+  cardCorner:$('hlCardCorner')?.value==='sharp'?'sharp':'rounded',
+  matchPosition:$('hlMatchPosition')?.value==='above'?'above':'inline',
+  contextColor:$('hlContextColor')?.value||'',
+  contextBg:$('hlContextBg')?.value||''
+ };
+ const r=await api('/api/admin/blacklist/highlight',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ const d=await r.json().catch(()=>({}));
+ if(r.ok){toast('Настройки отображения сохранены ✓');if($('hlStatus'))$('hlStatus').textContent='Сохранено · применяется во всех 3 приложениях';}
+ else toast(d.error||'Не удалось сохранить настройки');
+}
+async function resetBlacklistHighlight(){
+ if(!requireAuth())return;
+ if($('hlColor'))$('hlColor').value=DEFAULT_HL.color;
+ if($('hlBg'))$('hlBg').value=DEFAULT_HL.bg;
+ if($('hlSize'))$('hlSize').value=DEFAULT_HL.sizePercent;
+ if($('hlBefore'))$('hlBefore').value=DEFAULT_HL.before;
+ if($('hlAfterMode'))$('hlAfterMode').value=DEFAULT_HL.afterMode;
+ if($('hlAfterChars'))$('hlAfterChars').value=DEFAULT_HL.afterChars;
+ if($('hlUseTextBoundaries'))$('hlUseTextBoundaries').checked=(DEFAULT_HL.boundaryMode==='text');
+ if($('hlStartText'))$('hlStartText').value='';
+ if($('hlEndText'))$('hlEndText').value='';
+ if($('hlCardVariantEnabled'))$('hlCardVariantEnabled').checked=!!DEFAULT_HL.cardVariantEnabled;
+ if($('hlCardVariant'))$('hlCardVariant').value=DEFAULT_HL.cardVariant;
+ if($('hlCardBorderColor'))$('hlCardBorderColor').value=DEFAULT_HL.cardBorderColor;
+ if($('hlCardBorderWidth'))$('hlCardBorderWidth').value=DEFAULT_HL.cardBorderWidth;
+ if($('hlCardCorner'))$('hlCardCorner').value=DEFAULT_HL.cardCorner;
+ if($('hlMatchPosition'))$('hlMatchPosition').value=DEFAULT_HL.matchPosition;
+ if($('hlContextColor'))$('hlContextColor').value='#4b315e';
+ if($('hlContextBg'))$('hlContextBg').value='#ffffff';
+ renderHlPreview();
+ await saveBlacklistHighlight();
 }
 async function deleteBlacklistFile(id,name){if(!requireAuth())return;if(!confirm(`Удалить файл «${name}» из базы? Пользователи больше не смогут искать его.`))return;const r=await api('/api/admin/blacklist/files/'+id,{method:'DELETE'});if(r.ok){toast('Файл удалён');loadBlacklistFiles();loadBlacklistMeta()}else toast('Не удалось удалить файл');}
 function updateStats(){const t=Date.now();$('sUsers').textContent=users.length;$('sActive').textContent=users.filter(u=>!u.blocked&&u.subscription_until>t).length;$('sExpired').textContent=users.filter(u=>u.subscription_until<=t).length;$('sRequests').textContent=requests.filter(x=>x.status==='pending').length}
@@ -351,9 +681,22 @@ async function confirmSettingsRestore(){
 }
 
 async function loadAll(){await Promise.all([loadUsers(),loadRequests()]);if(document.querySelector('#backups').classList.contains('active'))loadBackups();if(document.querySelector('#broadcast').classList.contains('active'))loadBroadcasts();if(document.querySelector('#chat').classList.contains('active'))loadChatUsers();if(document.querySelector('#blacklist').classList.contains('active')){loadBlacklistFiles();loadBlacklistMeta()}}
+async function forceUpdateAllUsers(){
+ if(!requireAuth())return;
+ if(!confirm('Все сейчас открытые пользовательские приложения очистят кэш и перезагрузятся (в течение минуты). Продолжить?'))return;
+ const btn=$('forceUpdateUsersBtn'); const oldText=btn.textContent; btn.disabled=true; btn.textContent='⏳ Отправка…';
+ const r=await api('/api/admin/force-update-users',{method:'POST'});
+ const d=await r.json().catch(()=>({}));
+ btn.disabled=false; btn.textContent=oldText;
+ if(r.ok) toast('Команда на обновление отправлена всем приложениям ✓');
+ else toast(d.error||'Не удалось отправить команду');
+}
+$('forceUpdateUsersBtn').onclick=forceUpdateAllUsers;
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function applyTheme(){const t=localStorage.getItem('xcarAdminTheme')||'dark';document.documentElement.dataset.theme=t;$('themeBtn').textContent=t==='dark'?'☀️':'🌙'}
 $('themeBtn').onclick=()=>{localStorage.setItem('xcarAdminTheme',(localStorage.getItem('xcarAdminTheme')||'dark')==='dark'?'light':'dark');applyTheme()};applyTheme();
+updateAuthUI();
+renderHlPreview();
 if(auth)loadAll();
 </script>
 <script>if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('service-worker.js').catch(()=>{}));</script>
